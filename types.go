@@ -93,6 +93,20 @@ type UpdateAvailable struct {
 	SHA256            string            `json:"sha256"`
 	Signature         string            `json:"signature"`
 	PayloadProperties map[string]string `json:"payload_properties"`
+	// Delta, when non-nil, offers a smaller base->target delta payload the device
+	// MAY apply instead of the full payload above, IFF its current version equals
+	// Delta.BaseVersion. Absent when no applicable delta exists; the full payload
+	// is always the safe fallback (delta_updates_design.md).
+	Delta *DeltaUpdate `json:"delta,omitempty"`
+}
+
+// DeltaUpdate is the optional delta-payload offer within an UpdateAvailable. The
+// device applies it only when on BaseVersion; otherwise it uses the full payload.
+type DeltaUpdate struct {
+	BaseVersion string `json:"base_version"`
+	URL         string `json:"url"`
+	Size        int64  `json:"size"`
+	SHA256      string `json:"sha256"`
 }
 
 // UpdateCheckResult models the two possible outcomes of GET /client/update in a
