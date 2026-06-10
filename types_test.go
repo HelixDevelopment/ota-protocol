@@ -231,6 +231,59 @@ func TestTelemetryReportRoundTrip(t *testing.T) {
 	}
 }
 
+// TestTelemetryReportOptionalTelemetryFields proves the additive optional
+// per-event annotations (duration_ms, bytes_transferred) round-trip with their
+// exact values, serialise under the documented snake_case keys, and are omitted
+// when nil so legacy reports stay byte-identical (additive, no wire break).
+func TestTelemetryReportOptionalTelemetryFields(t *testing.T) {
+	dur := int64(8421)
+	bytes := int64(379074366)
+	in := TelemetryReport{
+		DeviceID:         "8f3a-uuid",
+		DeploymentID:     "d12b-uuid",
+		Event:            EventSuccess,
+		Progress:         100,
+		Timestamp:        fixedTime,
+		DurationMS:       &dur,
+		BytesTransferred: &bytes,
+	}
+	got := roundTrip(t, in)
+	if got.DurationMS == nil || *got.DurationMS != 8421 {
+		t.Errorf("DurationMS after round-trip = %v, want 8421", got.DurationMS)
+	}
+	if got.BytesTransferred == nil || *got.BytesTransferred != 379074366 {
+		t.Errorf("BytesTransferred after round-trip = %v, want 379074366", got.BytesTransferred)
+	}
+	b, err := json.Marshal(in)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !contains(string(b), `"duration_ms":8421`) || !contains(string(b), `"bytes_transferred":379074366`) {
+		t.Errorf("JSON %s missing duration_ms/bytes_transferred", b)
+	}
+
+	// omitempty: a report without the annotations must not emit either key, so
+	// existing device payloads serialise byte-for-byte as before.
+	legacy := TelemetryReport{DeviceID: "d", DeploymentID: "dep", Event: EventInstalling,
+		Progress: 50, Timestamp: fixedTime}
+	bl, err := json.Marshal(legacy)
+	if err != nil {
+		t.Fatalf("marshal legacy: %v", err)
+	}
+	if contains(string(bl), "duration_ms") || contains(string(bl), "bytes_transferred") {
+		t.Errorf("legacy report JSON %s should omit duration_ms/bytes_transferred", bl)
+	}
+
+	// A nil-vs-zero distinction is preserved: an explicit zero is reported, not omitted.
+	zero := int64(0)
+	z := TelemetryReport{DeviceID: "d", DeploymentID: "dep", Event: EventSuccess,
+		Progress: 100, Timestamp: fixedTime, DurationMS: &zero, BytesTransferred: &zero}
+	bz, _ := json.Marshal(z)
+	if !contains(string(bz), `"duration_ms":0`) || !contains(string(bz), `"bytes_transferred":0`) {
+		t.Errorf("explicit-zero report JSON %s should carry duration_ms:0 + bytes_transferred:0", bz)
+	}
+}
+
 // TestTelemetryReportInvalidEnumUnmarshal confirms struct-level unmarshal fails
 // when an embedded enum value is invalid.
 func TestTelemetryReportInvalidEnumUnmarshal(t *testing.T) {

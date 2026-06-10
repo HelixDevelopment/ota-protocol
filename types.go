@@ -154,4 +154,14 @@ type TelemetryReport struct {
 	Progress     int            `json:"progress"`
 	ErrorCode    string         `json:"error_code,omitempty"`
 	Timestamp    time.Time      `json:"timestamp"`
+	// DurationMS is the optional wall-clock duration of the lifecycle phase the
+	// event closes (e.g. the download or install elapsed time), in milliseconds.
+	// Additive optional field: legacy reports that omit it stay byte-identical
+	// (omitempty + pointer => the key is absent, never serialised as 0). A nil
+	// value means "not reported"; a non-nil 0 means "reported as zero".
+	DurationMS *int64 `json:"duration_ms,omitempty"`
+	// BytesTransferred is the optional number of payload bytes moved during the
+	// phase the event closes (e.g. bytes downloaded). Additive optional field
+	// with the same nil-vs-zero semantics as DurationMS.
+	BytesTransferred *int64 `json:"bytes_transferred,omitempty"`
 }

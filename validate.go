@@ -99,6 +99,15 @@ func ValidateTelemetryReport(r TelemetryReport) error {
 	if r.Timestamp.IsZero() {
 		return fmt.Errorf("%w: timestamp", ErrMissingField)
 	}
+	// Optional telemetry annotations: when present they must be non-negative
+	// (a negative duration or byte count is malformed, never silently accepted —
+	// §11.4.6). Absent (nil) is the byte-identical legacy case and stays valid.
+	if r.DurationMS != nil && *r.DurationMS < 0 {
+		return fmt.Errorf("%w: duration_ms must be >= 0, got %d", ErrInvalidValue, *r.DurationMS)
+	}
+	if r.BytesTransferred != nil && *r.BytesTransferred < 0 {
+		return fmt.Errorf("%w: bytes_transferred must be >= 0, got %d", ErrInvalidValue, *r.BytesTransferred)
+	}
 	return nil
 }
 

@@ -131,6 +131,11 @@ func TestValidateTelemetryReport(t *testing.T) {
 		{"progress negative", func(r *TelemetryReport) { r.Progress = -1 }, ErrInvalidValue},
 		{"progress over 100", func(r *TelemetryReport) { r.Progress = 101 }, ErrInvalidValue},
 		{"zero timestamp", func(r *TelemetryReport) { r.Timestamp = zeroTime() }, ErrMissingField},
+		{"duration_ms present ok", func(r *TelemetryReport) { v := int64(8421); r.DurationMS = &v }, nil},
+		{"bytes_transferred present ok", func(r *TelemetryReport) { v := int64(379074366); r.BytesTransferred = &v }, nil},
+		{"duration_ms zero ok", func(r *TelemetryReport) { v := int64(0); r.DurationMS = &v }, nil},
+		{"duration_ms negative", func(r *TelemetryReport) { v := int64(-1); r.DurationMS = &v }, ErrInvalidValue},
+		{"bytes_transferred negative", func(r *TelemetryReport) { v := int64(-5); r.BytesTransferred = &v }, ErrInvalidValue},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
