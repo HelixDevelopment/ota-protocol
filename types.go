@@ -85,7 +85,14 @@ type UpdateCheckRequest struct {
 // update_engine.applyPayload(url, offset, size, headers) (UpdateAvailable
 // schema). The url is Range-served, Content-Encoding identity, ZIP_STORED.
 type UpdateAvailable struct {
-	ReleaseID         string            `json:"release_id"`
+	ReleaseID string `json:"release_id"`
+	// DeploymentID is the active deployment this offer belongs to. The device
+	// echoes it back in every telemetry report (POST /client/telemetry), whose
+	// schema validator REQUIRES a deployment_id. Carrying it here lets a device
+	// self-serve the id from its own update offer instead of obtaining it
+	// out-of-band; absent (omitempty) for legacy offers, where the device falls
+	// back to an operator-supplied id.
+	DeploymentID      string            `json:"deployment_id,omitempty"`
 	Version           string            `json:"version"`
 	URL               string            `json:"url"`
 	Offset            int64             `json:"offset"`

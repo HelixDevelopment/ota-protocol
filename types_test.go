@@ -3,6 +3,7 @@ package otaprotocol
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -140,6 +141,49 @@ func TestUpdateAvailableRoundTrip(t *testing.T) {
 	if got := roundTrip(t, in); !reflect.DeepEqual(got, in) {
 		t.Errorf("round-trip mismatch:\n got %+v\nwant %+v", got, in)
 	}
+}
+
+// TestUpdateAvailableDeploymentID proves the update offer carries the
+// deployment_id so a device can self-serve the telemetry deployment_id from its
+// own update offer (closes the §11.4.6 protocol gap surfaced by the emulator):
+// the field round-trips, serialises as `deployment_id`, and is omitted when
+// empty (omitempty) so legacy offers stay byte-identical.
+func TestUpdateAvailableDeploymentID(t *testing.T) {
+	in := UpdateAvailable{
+		ReleaseID:         "r1",
+		Version:           "1.1.0",
+		URL:               "u",
+		SHA256:            validSHA,
+		Signature:         "s",
+		DeploymentID:      "dep-abc-123",
+		PayloadProperties: map[string]string{},
+	}
+	got := roundTrip(t, in)
+	if got.DeploymentID != "dep-abc-123" {
+		t.Errorf("DeploymentID after round-trip = %q, want %q", got.DeploymentID, "dep-abc-123")
+	}
+	b, err := json.Marshal(in)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	if !contains(string(b), `"deployment_id":"dep-abc-123"`) {
+		t.Errorf("JSON %s missing deployment_id field", b)
+	}
+
+	// omitempty: an offer without a deployment_id must not emit the key.
+	empty := UpdateAvailable{ReleaseID: "r1", Version: "1.1.0", URL: "u",
+		SHA256: validSHA, Signature: "s", PayloadProperties: map[string]string{}}
+	be, err := json.Marshal(empty)
+	if err != nil {
+		t.Fatalf("marshal empty: %v", err)
+	}
+	if contains(string(be), "deployment_id") {
+		t.Errorf("empty offer JSON %s should omit deployment_id", be)
+	}
+}
+
+func contains(s, sub string) bool {
+	return strings.Contains(s, sub)
 }
 
 func TestUpdateCheckResultSemantics(t *testing.T) {
