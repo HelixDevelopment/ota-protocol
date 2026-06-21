@@ -1,0 +1,7 @@
+{
+  "N": 100,
+  "p50_ns": 41,
+  "p95_ns": 42,
+  "p99_ns": 417,
+  "test": "TestStressConcurrentTelemetryValidation"
+}

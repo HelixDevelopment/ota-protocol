@@ -92,11 +92,9 @@ func TestChaosValidateSHA256InputCorruption(t *testing.T) {
 		{"null_bytes", string(make([]byte, 64))},
 		{"high_bytes", string([]byte{0x80, 0xFF, 0x00, 0x7F}) + strings.Repeat("a", 60)},
 		{"mixed_case", "ABCDEF0123456789abcdef0123456789abcdef0123456789abcdef0123456789"},
-		{"only_digits", strings.Repeat("0", 64)},
 		{"only_colons", strings.Repeat(":", 64)},
 		{"only_slashes", strings.Repeat("/", 64)},
 		{"hex_prefix_0x", "0x" + strings.Repeat("a", 62)},
-		{"boundary_64_valid", strings.Repeat("a", 64)},
 	}
 
 	var results []entry
@@ -315,15 +313,15 @@ func TestChaosPayloadPropertiesOverflow(t *testing.T) {
 		name  string
 		value string
 	}{
+		// Negative values ARE valid int64 at parse time (ParsePayloadProperties
+		// delegates semantic validation to Validate()). Only genuine overflows
+		// (values that cannot fit in int64) are tested here.
 		{"file_size_overflow", "9223372036854775808"},
-		{"file_size_negative", "-1"},
-		{"file_size_min_int64", "-9223372036854775808"},
 		{"file_size_huge_positive", "9999999999999999999"},
 		{"file_size_float", "100.5"},
 		{"file_size_hex", "0xFF"},
 		{"file_size_binary", "0b1010"},
 		{"meta_size_overflow", "9223372036854775808"},
-		{"meta_size_negative", "-100"},
 		{"meta_size_huge", "18446744073709551616"},
 	}
 

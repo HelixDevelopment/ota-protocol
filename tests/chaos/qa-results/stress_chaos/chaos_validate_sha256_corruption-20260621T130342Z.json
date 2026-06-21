@@ -1,0 +1,110 @@
+[
+  {
+    "name": "empty",
+    "input": "",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): got length 0"
+  },
+  {
+    "name": "short_63",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): got length 63"
+  },
+  {
+    "name": "long_65",
+    "input": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): got length 65"
+  },
+  {
+    "name": "short_1",
+    "input": "a",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): got length 1"
+  },
+  {
+    "name": "zero_length",
+    "input": "",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): got length 0"
+  },
+  {
+    "name": "all_uppercase",
+    "input": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"A\" at index 0"
+  },
+  {
+    "name": "non_hex_g",
+    "input": "gggggggggggggggggggggggggggggggg",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"g\" at index 0"
+  },
+  {
+    "name": "non_hex_x",
+    "input": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"x\" at index 0"
+  },
+  {
+    "name": "non_hex_z",
+    "input": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"z\" at index 0"
+  },
+  {
+    "name": "unicode_emoji",
+    "input": "😀aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): got length 67"
+  },
+  {
+    "name": "leading_space",
+    "input": " aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \" \" at index 0"
+  },
+  {
+    "name": "trailing_newline",
+    "input": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"\\n\" at index 63"
+  },
+  {
+    "name": "null_bytes",
+    "input": "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"\\x00\" at index 0"
+  },
+  {
+    "name": "high_bytes",
+    "input": "\ufffd\ufffd\u0000aaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"\\u0080\" at index 0"
+  },
+  {
+    "name": "mixed_case",
+    "input": "ABCDEF0123456789abcdef0123456789",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"A\" at index 0"
+  },
+  {
+    "name": "only_colons",
+    "input": "::::::::::::::::::::::::::::::::",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \":\" at index 0"
+  },
+  {
+    "name": "only_slashes",
+    "input": "////////////////////////////////",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"/\" at index 0"
+  },
+  {
+    "name": "hex_prefix_0x",
+    "input": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "failed": true,
+    "error": "otaprotocol: invalid sha256 (want 64 lowercase hex chars): non-hex/uppercase char \"x\" at index 1"
+  }
+]

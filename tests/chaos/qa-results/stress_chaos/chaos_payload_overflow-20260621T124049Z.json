@@ -1,0 +1,59 @@
+[
+  {
+    "name": "file_size_overflow",
+    "input": "9223372036854775808",
+    "failed": true,
+    "error": "otaprotocol: invalid field value: FILE_SIZE = \"9223372036854775808\": strconv.ParseInt: parsing \"9223372036854775808\": value out of range"
+  },
+  {
+    "name": "file_size_negative",
+    "input": "-1",
+    "failed": false
+  },
+  {
+    "name": "file_size_min_int64",
+    "input": "-9223372036854775808",
+    "failed": false
+  },
+  {
+    "name": "file_size_huge_positive",
+    "input": "9999999999999999999",
+    "failed": true,
+    "error": "otaprotocol: invalid field value: FILE_SIZE = \"9999999999999999999\": strconv.ParseInt: parsing \"9999999999999999999\": value out of range"
+  },
+  {
+    "name": "file_size_float",
+    "input": "100.5",
+    "failed": true,
+    "error": "otaprotocol: invalid field value: FILE_SIZE = \"100.5\": strconv.ParseInt: parsing \"100.5\": invalid syntax"
+  },
+  {
+    "name": "file_size_hex",
+    "input": "0xFF",
+    "failed": true,
+    "error": "otaprotocol: invalid field value: FILE_SIZE = \"0xFF\": strconv.ParseInt: parsing \"0xFF\": invalid syntax"
+  },
+  {
+    "name": "file_size_binary",
+    "input": "0b1010",
+    "failed": true,
+    "error": "otaprotocol: invalid field value: FILE_SIZE = \"0b1010\": strconv.ParseInt: parsing \"0b1010\": invalid syntax"
+  },
+  {
+    "name": "meta_size_overflow",
+    "input": "9223372036854775808",
+    "failed": true,
+    "error": "otaprotocol: invalid field value: METADATA_SIZE = \"9223372036854775808\": strconv.ParseInt: parsing \"9223372036854775808\": value out of range"
+  },
+  {
+    "name": "meta_size_negative",
+    "input": "-100",
+    "failed": false
+  },
+  {
+    "name": "meta_size_huge",
+    "input": "18446744073709551616",
+    "failed": true,
+    "error": "otaprotocol: invalid field value: METADATA_SIZE = \"18446744073709551616\": strconv.ParseInt: parsing \"18446744073709551616\": value out of range"
+  }
+]

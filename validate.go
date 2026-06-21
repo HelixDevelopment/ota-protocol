@@ -3,6 +3,7 @@ package otaprotocol
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 // Sentinel errors returned (wrapped) by the validation helpers. Callers can
@@ -54,6 +55,9 @@ func ValidateArtifactMeta(m ArtifactMeta) error {
 	if m.Size <= 0 {
 		return fmt.Errorf("%w: size must be > 0, got %d", ErrInvalidValue, m.Size)
 	}
+	if m.Size > math.MaxInt32 {
+		return fmt.Errorf("%w: size %d exceeds maximum allowed", ErrInvalidValue, m.Size)
+	}
 	if !m.OSType.Valid() {
 		return fmt.Errorf("artifact os_type: %w: %q", ErrInvalidEnum, m.OSType.String())
 	}
@@ -62,6 +66,9 @@ func ValidateArtifactMeta(m ArtifactMeta) error {
 	}
 	if m.Version == "" {
 		return fmt.Errorf("%w: version", ErrMissingField)
+	}
+	if len(m.Version) > 255 {
+		return fmt.Errorf("%w: version too long (%d chars)", ErrInvalidValue, len(m.Version))
 	}
 	if m.Signature == "" {
 		return fmt.Errorf("%w: signature", ErrMissingField)

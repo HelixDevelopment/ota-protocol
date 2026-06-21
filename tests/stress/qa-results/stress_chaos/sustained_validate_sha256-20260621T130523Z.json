@@ -1,0 +1,9 @@
+{
+  "N": 200,
+  "all_pass": true,
+  "failed": 0,
+  "p50_ns": 375,
+  "p95_ns": 458,
+  "p99_ns": 500,
+  "test": "TestStressSustainedValidateSHA256"
+}
