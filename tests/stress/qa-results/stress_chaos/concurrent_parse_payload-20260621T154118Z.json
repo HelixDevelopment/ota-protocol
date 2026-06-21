@@ -1,0 +1,7 @@
+{
+  "N": 100,
+  "p50_ns": 375,
+  "p95_ns": 1708,
+  "p99_ns": 4542,
+  "test": "TestStressConcurrentParsePayload"
+}

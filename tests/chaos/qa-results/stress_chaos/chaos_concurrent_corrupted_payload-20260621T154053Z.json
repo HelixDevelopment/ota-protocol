@@ -1,0 +1,6 @@
+{
+  "goroutines": 50,
+  "panics": 0,
+  "rejected": 38,
+  "test": "TestChaosConcurrentCorruptedPayload"
+}
