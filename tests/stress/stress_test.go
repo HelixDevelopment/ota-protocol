@@ -142,7 +142,6 @@ func TestStressConcurrentArtifactMetaValidation(t *testing.T) {
 		mu      sync.Mutex
 		wg      sync.WaitGroup
 		results []time.Duration
-		
 	)
 
 	for i := 0; i < N; i++ {
@@ -275,7 +274,6 @@ func TestStressConcurrentTelemetryValidation(t *testing.T) {
 		mu      sync.Mutex
 		wg      sync.WaitGroup
 		results []time.Duration
-		
 	)
 
 	for i := 0; i < N; i++ {

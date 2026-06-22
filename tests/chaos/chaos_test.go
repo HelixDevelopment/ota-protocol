@@ -178,7 +178,10 @@ func TestChaosArtifactMetaCorruption(t *testing.T) {
 		{"sha256_short", func(m *otaprotocol.ArtifactMeta) { m.SHA256 = strings.Repeat("a", 48) }},
 		{"oversize_version", func(m *otaprotocol.ArtifactMeta) { m.Version = strings.Repeat("v", 1000) }},
 		{"all_empty_strings", func(m *otaprotocol.ArtifactMeta) {
-			m.SHA256 = ""; m.Board = ""; m.Version = ""; m.Signature = ""
+			m.SHA256 = ""
+			m.Board = ""
+			m.Version = ""
+			m.Signature = ""
 		}},
 	}
 
@@ -200,7 +203,7 @@ func TestChaosArtifactMetaCorruption(t *testing.T) {
 				errStr = err.Error()
 			}
 			results = append(results, entry{
-				Name:     c.name,
+				Name: c.name,
 				Mutated: fmt.Sprintf("SHA256=%q Size=%d OS=%q Board=%q Version=%q",
 					m.SHA256[:min(len(m.SHA256), 16)], m.Size, m.OSType, m.Board, m.Version),
 				Rejected: rejected,

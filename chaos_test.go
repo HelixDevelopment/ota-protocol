@@ -56,10 +56,10 @@ func TestChaosValidateSHA256Malformed(t *testing.T) {
 	}
 
 	record := map[string]interface{}{
-		"test":   "TestChaosValidateSHA256Malformed",
-		"cases":  len(tests),
-		"pass":   !t.Failed(),
-		"time":   time.Now().UTC(),
+		"test":  "TestChaosValidateSHA256Malformed",
+		"cases": len(tests),
+		"pass":  !t.Failed(),
+		"time":  time.Now().UTC(),
 	}
 	writeEvidence("ChaosValidateSHA256Malformed", record)
 }
@@ -340,11 +340,11 @@ func TestChaosPayloadProperties(t *testing.T) {
 			}, false, false},
 		{"extra unknown keys",
 			map[string]string{
-				HeaderFileHash:     "fh",
-				HeaderFileSize:     "100",
-				HeaderMetadataHash: "mh",
-				HeaderMetadataSize: "10",
-				"EXTRA_KEY":        "should-be-ignored",
+				HeaderFileHash:          "fh",
+				HeaderFileSize:          "100",
+				HeaderMetadataHash:      "mh",
+				HeaderMetadataSize:      "10",
+				"EXTRA_KEY":             "should-be-ignored",
 				"SWITCH_SLOT_ON_REBOOT": "true",
 			}, false, true},
 		{"FILE_SIZE overflow int64",
