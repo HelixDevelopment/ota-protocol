@@ -2,6 +2,7 @@ package otaprotocol
 
 import (
 	"errors"
+	"math"
 	"strings"
 	"testing"
 )
@@ -61,9 +62,13 @@ func TestValidateArtifactMeta(t *testing.T) {
 		{"bad sha512 char", func(m *ArtifactMeta) { m.SHA512 = strings.Repeat("Z", 128) }, ErrInvalidValue},
 		{"zero size", func(m *ArtifactMeta) { m.Size = 0 }, ErrInvalidValue},
 		{"negative size", func(m *ArtifactMeta) { m.Size = -5 }, ErrInvalidValue},
+		{"size exceeds MaxInt32", func(m *ArtifactMeta) { m.Size = int64(math.MaxInt32) + 1 }, ErrInvalidValue},
+		{"size at MaxInt32 ok", func(m *ArtifactMeta) { m.Size = int64(math.MaxInt32) }, nil},
 		{"bad os", func(m *ArtifactMeta) { m.OSType = "macos" }, ErrInvalidEnum},
 		{"empty board", func(m *ArtifactMeta) { m.Board = "" }, ErrMissingField},
 		{"empty version", func(m *ArtifactMeta) { m.Version = "" }, ErrMissingField},
+		{"version too long", func(m *ArtifactMeta) { m.Version = strings.Repeat("v", 256) }, ErrInvalidValue},
+		{"version at max len ok", func(m *ArtifactMeta) { m.Version = strings.Repeat("v", 255) }, nil},
 		{"empty signature", func(m *ArtifactMeta) { m.Signature = "" }, ErrMissingField},
 	}
 	for _, tt := range tests {
