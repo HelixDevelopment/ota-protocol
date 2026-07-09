@@ -16,16 +16,16 @@ func FuzzParsePayloadProperties(f *testing.F) {
 	// Seed with combinations of the four keys carrying valid + edge values.
 	type kv struct{ fh, fs, mh, ms string }
 	seeds := []kv{
-		{"abc", "1024", "def", "256"},                         // valid
-		{"", "0", "", "0"},                                    // empty hashes
-		{"h", "-1", "h", "-1"},                                // negative sizes
+		{"abc", "1024", "def", "256"},                            // valid
+		{"", "0", "", "0"},                                       // empty hashes
+		{"h", "-1", "h", "-1"},                                   // negative sizes
 		{"h", "9223372036854775807", "h", "9223372036854775807"}, // int64 max
-		{"h", "9223372036854775808", "h", "0"},                // overflow
-		{"h", "0x10", "h", "0"},                               // hex-looking
-		{"h", "   12  ", "h", "0"},                            // padded
-		{"h", "", "h", "0"},                                   // empty size
-		{"h", "+5", "h", "-0"},                                // signs
-		{"h", "１２３", "h", "0"},                              // fullwidth digits
+		{"h", "9223372036854775808", "h", "0"},                   // overflow
+		{"h", "0x10", "h", "0"},                                  // hex-looking
+		{"h", "   12  ", "h", "0"},                               // padded
+		{"h", "", "h", "0"},                                      // empty size
+		{"h", "+5", "h", "-0"},                                   // signs
+		{"h", "１２３", "h", "0"},                                   // fullwidth digits
 	}
 	for _, s := range seeds {
 		f.Add(s.fh, s.fs, s.mh, s.ms)
@@ -74,9 +74,9 @@ func FuzzValidateSHA256(f *testing.F) {
 	f.Add("")
 	f.Add("ABCDEF")
 	f.Add("zz")
-	f.Add("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85")  // 63
+	f.Add("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85")   // 63
 	f.Add("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b8555") // 65
-	f.Add("ＡＢＣ")                                                            // fullwidth
+	f.Add("ＡＢＣ")                                                               // fullwidth
 
 	f.Fuzz(func(t *testing.T, s string) {
 		defer func() {
