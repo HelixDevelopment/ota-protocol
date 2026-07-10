@@ -393,3 +393,114 @@ func TestParseHeaderIntRejectsOverflow(t *testing.T) {
 		t.Fatalf("overflow FILE_SIZE = %v, want ErrInvalidValue", err)
 	}
 }
+
+// TestValidateArtifactMetaRejectsWhitespaceOnlyFields proves Board, Version,
+// and Signature are rejected when they hold ONLY whitespace (spaces/tabs) —
+// a non-empty-but-degenerate value the bare `== ""` completeness check
+// cannot catch. The package already recognizes "blank" as a distinct invalid
+// class via the unexported isBlank helper (used today only by
+// ValidateUpdateCheckRequest.CurrentVersion); this pins the same invariant
+// onto ArtifactMeta's three required free-text fields so a board id, version
+// string, or signature made of pure whitespace can never silently validate.
+// Before the fix, ValidateArtifactMeta(m) with e.g. Board="   " returned nil
+// (accepted) because "   " != "" — a real completeness gap.
+func TestValidateArtifactMetaRejectsWhitespaceOnlyFields(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func(*ArtifactMeta)
+	}{
+		{"blank board spaces", func(m *ArtifactMeta) { m.Board = "   " }},
+		{"blank board tab", func(m *ArtifactMeta) { m.Board = "\t" }},
+		{"blank board mixed ws", func(m *ArtifactMeta) { m.Board = " \t \t" }},
+		{"blank version spaces", func(m *ArtifactMeta) { m.Version = "   " }},
+		{"blank version tab", func(m *ArtifactMeta) { m.Version = "\t" }},
+		{"blank signature spaces", func(m *ArtifactMeta) { m.Signature = "   " }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := baseArtifactMeta()
+			tt.mutate(&m)
+			err := ValidateArtifactMeta(m)
+			if !errors.Is(err, ErrInvalidValue) {
+				t.Fatalf("ValidateArtifactMeta with whitespace-only field = %v, want ErrInvalidValue", err)
+			}
+		})
+	}
+	// Sanity: a real non-blank value with incidental internal/edge spacing
+	// (e.g. "Orange Pi 5") is NOT blank and must still pass — the fix must
+	// reject ONLY all-whitespace strings, not strings that merely contain a
+	// space character.
+	m := baseArtifactMeta()
+	m.Board = "Orange Pi 5"
+	if err := ValidateArtifactMeta(m); err != nil {
+		t.Fatalf("board containing a real space wrongly rejected: %v", err)
+	}
+}
+
+// TestIsBlankRecognizesFullASCIIWhitespaceSet proves isBlank treats a string
+// as blank when it consists ONLY of standard ASCII whitespace — space, tab,
+// newline, carriage return, vertical tab, or form feed (the classic C/POSIX
+// isspace() set) — not merely space and tab. Before the fix, isBlank(s)
+// returned false for "\n", "\r", "\r\n", "\v", and "\f", so a value that was
+// visually/semantically blank (e.g. a lone newline) was treated as
+// legitimate non-blank content and passed every isBlank-gated check
+// (ValidateUpdateCheckRequest.CurrentVersion, and — after the whitespace-only
+// fix above — ArtifactMeta.Board/Version/Signature and
+// TelemetryReport.DeviceID/DeploymentID).
+func TestIsBlankRecognizesFullASCIIWhitespaceSet(t *testing.T) {
+	// isBlank("") is vacuously true (an empty string has no non-whitespace
+	// byte) — every call site already gates on non-empty before calling
+	// isBlank, so this is intentional, not a defect; included here to pin the
+	// vacuous-truth semantics rather than leave it unspecified.
+	blank := []string{"", " ", "\t", "\n", "\r", "\r\n", "\v", "\f", "  \t\n\r\v\f  "}
+	for _, s := range blank {
+		if !isBlank(s) {
+			t.Errorf("isBlank(%q) = false, want true (pure ASCII whitespace)", s)
+		}
+	}
+	notBlank := []string{"a", " a ", "1.2.3", "\x00", "x\n"}
+	for _, s := range notBlank {
+		if isBlank(s) {
+			t.Errorf("isBlank(%q) = true, want false (contains non-whitespace)", s)
+		}
+	}
+}
+
+// TestValidateUpdateCheckRequestRejectsNewlineOnlyVersion pins the concrete
+// end-to-end consequence of the isBlank gap at the exported-function level: a
+// current_version consisting solely of a newline (or CR, or CRLF) MUST be
+// rejected exactly like the already-tested all-spaces case, not silently
+// accepted as a present, valid version string.
+func TestValidateUpdateCheckRequestRejectsNewlineOnlyVersion(t *testing.T) {
+	for _, v := range []string{"\n", "\r", "\r\n", "\v", "\f"} {
+		err := ValidateUpdateCheckRequest(UpdateCheckRequest{CurrentVersion: v})
+		if !errors.Is(err, ErrInvalidValue) {
+			t.Errorf("ValidateUpdateCheckRequest(CurrentVersion=%q) = %v, want ErrInvalidValue", v, err)
+		}
+	}
+}
+
+// TestValidateTelemetryReportRejectsWhitespaceOnlyIDs mirrors the above for
+// TelemetryReport.DeviceID / DeploymentID: a device_id or deployment_id made
+// of pure whitespace is a degenerate value that MUST be rejected, matching
+// the completeness bar already applied to ValidateUpdateCheckRequest.
+func TestValidateTelemetryReportRejectsWhitespaceOnlyIDs(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func(*TelemetryReport)
+	}{
+		{"blank device_id", func(r *TelemetryReport) { r.DeviceID = "   " }},
+		{"blank device_id tab", func(r *TelemetryReport) { r.DeviceID = "\t" }},
+		{"blank deployment_id", func(r *TelemetryReport) { r.DeploymentID = "   " }},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := baseTelemetryReport()
+			tt.mutate(&r)
+			err := ValidateTelemetryReport(r)
+			if !errors.Is(err, ErrInvalidValue) {
+				t.Fatalf("ValidateTelemetryReport with whitespace-only id = %v, want ErrInvalidValue", err)
+			}
+		})
+	}
+}

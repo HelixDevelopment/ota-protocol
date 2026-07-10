@@ -215,6 +215,36 @@ func TestEnumUnmarshalNonStringRejected(t *testing.T) {
 	}
 }
 
+// TestEnumUnmarshalNullRejected proves a JSON `null` decoded into an enum
+// field is REJECTED, not silently coerced to a valid-looking zero value.
+// encoding/json's documented null-into-non-pointer behavior is a no-op (the
+// destination string is left at its zero value "" with a nil error) — a
+// naive enum decoder could therefore let `null` slip through as an
+// unvalidated empty string. unmarshalEnum does not: the zero-value "" it
+// observes after the no-op inner Unmarshal is then run through isValidEnum,
+// which every production enum's allowed-set rejects (none enumerates "" as
+// valid), so the outer call correctly returns ErrInvalidEnum both for a
+// bare `null` token and for `null` embedded inside a larger struct's JSON.
+func TestEnumUnmarshalNullRejected(t *testing.T) {
+	var os OSType
+	err := json.Unmarshal([]byte(`null`), &os)
+	if err == nil {
+		t.Fatal("json null unmarshalled into OSType without error, want ErrInvalidEnum")
+	}
+	if !errors.Is(err, ErrInvalidEnum) {
+		t.Fatalf("error = %v, want ErrInvalidEnum", err)
+	}
+	if os != "" {
+		t.Fatalf("rejected null unmarshal mutated dst to %q, want unchanged empty", os)
+	}
+
+	js := `{"artifact_id":"a","sha256":"` + validSHA + `","size":1,"os_type":null,"board":"b","version":"1","artifact_type":"full","upload_status":"validated"}`
+	var a Artifact
+	if err := json.Unmarshal([]byte(js), &a); !errors.Is(err, ErrInvalidEnum) {
+		t.Fatalf("struct-embedded null os_type = %v, want ErrInvalidEnum", err)
+	}
+}
+
 // TestEnumRoundTrip confirms every valid enum survives marshal then unmarshal.
 func TestEnumRoundTrip(t *testing.T) {
 	osVals := osTypeValues

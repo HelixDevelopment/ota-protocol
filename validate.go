@@ -64,14 +64,23 @@ func ValidateArtifactMeta(m ArtifactMeta) error {
 	if m.Board == "" {
 		return fmt.Errorf("%w: board", ErrMissingField)
 	}
+	if isBlank(m.Board) {
+		return fmt.Errorf("%w: board is blank", ErrInvalidValue)
+	}
 	if m.Version == "" {
 		return fmt.Errorf("%w: version", ErrMissingField)
+	}
+	if isBlank(m.Version) {
+		return fmt.Errorf("%w: version is blank", ErrInvalidValue)
 	}
 	if len(m.Version) > 255 {
 		return fmt.Errorf("%w: version too long (%d chars)", ErrInvalidValue, len(m.Version))
 	}
 	if m.Signature == "" {
 		return fmt.Errorf("%w: signature", ErrMissingField)
+	}
+	if isBlank(m.Signature) {
+		return fmt.Errorf("%w: signature is blank", ErrInvalidValue)
 	}
 	return nil
 }
@@ -94,8 +103,14 @@ func ValidateTelemetryReport(r TelemetryReport) error {
 	if r.DeviceID == "" {
 		return fmt.Errorf("%w: device_id", ErrMissingField)
 	}
+	if isBlank(r.DeviceID) {
+		return fmt.Errorf("%w: device_id is blank", ErrInvalidValue)
+	}
 	if r.DeploymentID == "" {
 		return fmt.Errorf("%w: deployment_id", ErrMissingField)
+	}
+	if isBlank(r.DeploymentID) {
+		return fmt.Errorf("%w: deployment_id is blank", ErrInvalidValue)
 	}
 	if !r.Event.Valid() {
 		return fmt.Errorf("telemetry event: %w: %q", ErrInvalidEnum, r.Event.String())
@@ -134,10 +149,19 @@ func validateSHA512(s string) error {
 	return nil
 }
 
-// isBlank reports whether s contains only ASCII space/tab characters.
+// isBlank reports whether s contains only ASCII whitespace characters: space,
+// tab, newline, carriage return, vertical tab, or form feed (the classic
+// C/POSIX isspace() set). An empty string is vacuously blank. This is a
+// byte-wise (not rune-wise) scan, consistent with the rest of this file's
+// SHA validators; it deliberately does not treat non-ASCII bytes (e.g. UTF-8
+// continuation bytes, or the Unicode NEL/NBSP code points) as whitespace, to
+// avoid misclassifying a byte fragment of an unrelated multi-byte character.
 func isBlank(s string) bool {
 	for i := 0; i < len(s); i++ {
-		if s[i] != ' ' && s[i] != '\t' {
+		switch s[i] {
+		case ' ', '\t', '\n', '\r', '\v', '\f':
+			continue
+		default:
 			return false
 		}
 	}
