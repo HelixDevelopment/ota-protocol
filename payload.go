@@ -81,6 +81,12 @@ func ParsePayloadProperties(h map[string]string) (PayloadProperties, error) {
 	if err != nil {
 		return p, err
 	}
+	if fileSize < 0 {
+		return p, fmt.Errorf("%w: %s must be >= 0, got %d", ErrInvalidValue, HeaderFileSize, fileSize)
+	}
+	if metaSize < 0 {
+		return p, fmt.Errorf("%w: %s must be >= 0, got %d", ErrInvalidValue, HeaderMetadataSize, metaSize)
+	}
 
 	p = PayloadProperties{
 		FileHash:     fileHash,

@@ -317,13 +317,21 @@ func TestChaosPayloadProperties(t *testing.T) {
 				HeaderMetadataHash: "mh",
 				HeaderMetadataSize: "12.5",
 			}, true, false},
+		// HC-3 (§11.4.108/§11.4.120 reconciliation): ParsePayloadProperties now
+		// rejects a negative FILE_SIZE at parse time instead of deferring the
+		// check to a separate Validate() call — closing the parse-vs-validate
+		// divergence where Parse silently accepted a value Validate rejected.
+		// This case moved from the "parses OK, fails Validate" bucket into the
+		// "rejected at parse time" bucket; see wave_hc3_test.go for the
+		// dedicated regression coverage + the RED (pre-fix)/GREEN (post-fix)
+		// anti-tautology proof.
 		{"negative FILE_SIZE string",
 			map[string]string{
 				HeaderFileHash:     "fh",
 				HeaderFileSize:     "-100",
 				HeaderMetadataHash: "mh",
 				HeaderMetadataSize: "10",
-			}, false, false},
+			}, true, false},
 		{"empty FILE_HASH",
 			map[string]string{
 				HeaderFileHash:     "",
