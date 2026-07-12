@@ -54,6 +54,7 @@ type Release struct {
 // DeviceRegistrationRequest provisions a device in the registry
 // (DeviceRegistration schema).
 type DeviceRegistrationRequest struct {
+	SchemaVersion  int               `json:"schema_version,omitempty"`
 	HardwareID     string            `json:"hardware_id"`
 	Model          string            `json:"model"`
 	OSType         OSType            `json:"os_type"`
@@ -78,6 +79,7 @@ type DeviceRegistrationResponse struct {
 // server short-circuit the update check. The effective device id is the
 // bearer-token subject, so it is not part of the request body.
 type UpdateCheckRequest struct {
+	SchemaVersion  int    `json:"schema_version,omitempty"`
 	CurrentVersion string `json:"current_version,omitempty"`
 }
 
@@ -85,7 +87,8 @@ type UpdateCheckRequest struct {
 // update_engine.applyPayload(url, offset, size, headers) (UpdateAvailable
 // schema). The url is Range-served, Content-Encoding identity, ZIP_STORED.
 type UpdateAvailable struct {
-	ReleaseID string `json:"release_id"`
+	SchemaVersion  int    `json:"schema_version,omitempty"`
+	ReleaseID      string `json:"release_id"`
 	// DeploymentID is the active deployment this offer belongs to. The device
 	// echoes it back in every telemetry report (POST /client/telemetry), whose
 	// schema validator REQUIRES a deployment_id. Carrying it here lets a device
